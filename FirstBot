@@ -1,0 +1,71 @@
+from telegram import Update
+from telegram.ext import Application, CommandHandler, filters, ContextTypes, MessageHandler
+
+Token = '6367704314:AAGm952K1rsDbjLjcz2mB53KDY8MEprynKw'
+BOT_USERNAME = '@BiwiKaiKam_bot'
+
+async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('Thanks for chatting with me. I am Biwi ka bot.....')
+
+async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('Hi I am biwi ka bot, Type something related to help biwi related questions..')
+
+async def custom_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text('No one can help you to save from biwi, Now you are trapped')
+
+
+#Responses
+
+def handle_response(text : str) -> str:
+    processed = text.lower()
+
+    if 'fight with biwi' in processed:
+        return 'sort it as early as possible. there are some ideas like\n 1. Ask her for Date\n 2.give some gift '
+
+    if 'biwi is upset' in processed:
+        return 'try to talk to her and try to console her'
+
+    return 'I do not understand'
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    message_type: str = update.message.chat.type
+    text: str = update.message.text
+
+    print(f'User ({update.message.chat.id}) in {message_type} : "{text}"')
+
+    if message_type == 'group':
+        if BOT_USERNAME in text:
+            new_text: str = text.replace(BOT_USERNAME , '').strip()
+            response : str = handle_response(new_text)
+
+        else:
+            return
+
+    else:
+        response: str = handle_response(text)
+
+    print('BOT:', response)
+    await update.message.reply_text(response)
+
+async def error(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    print(f'Updater {update} caused error {context.error}')
+
+if __name__ == '__main__':
+    print('starting Bot')
+    app = Application.builder().token(Token).build()
+
+    #commands
+    app.add_handler(CommandHandler('start',start_command))
+    app.add_handler(CommandHandler('help', help_command))
+    app.add_handler(CommandHandler('custom', custom_command))
+
+    #Messages
+    app.add_handler(MessageHandler(filters.TEXT, handle_message))
+
+    # Error
+    app.add_error_handler(error)
+
+    print('Polling')
+    app.run_polling(poll_interval=3)
+
+
